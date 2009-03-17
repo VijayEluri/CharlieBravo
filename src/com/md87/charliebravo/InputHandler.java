@@ -14,9 +14,14 @@ import com.dmdirc.parser.irc.callbacks.interfaces.IPrivateMessage;
 import com.md87.charliebravo.commands.AuthenticateCommand;
 import com.md87.charliebravo.commands.CalcCommand;
 import com.md87.charliebravo.commands.FollowupsCommand;
+import com.md87.charliebravo.commands.GitCommand;
 import com.md87.charliebravo.commands.GoogleCommand;
 import com.md87.charliebravo.commands.HelpCommand;
+import com.md87.charliebravo.commands.IssueCommand;
 import com.md87.charliebravo.commands.QuitCommand;
+import com.md87.charliebravo.commands.SetCommand;
+import com.md87.charliebravo.commands.TranslateCommand;
+import com.md87.charliebravo.commands.WhoisCommand;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,16 +35,29 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
 
     protected IRCParser parser;
 
+    protected final Config config;
+
     protected final List<Command> commands = new ArrayList<Command>();
     protected final Map<String, Response> responses = new HashMap<String, Response>();
 
-    public InputHandler() {
+    public InputHandler(final Config config) {
+        this.config = config;
+        
         commands.add(new GoogleCommand());
         commands.add(new QuitCommand());
         commands.add(new HelpCommand());
         commands.add(new FollowupsCommand());
         commands.add(new AuthenticateCommand());
         commands.add(new CalcCommand());
+        commands.add(new WhoisCommand());
+        commands.add(new TranslateCommand());
+        commands.add(new IssueCommand());
+        commands.add(new GitCommand());
+        commands.add(new SetCommand());
+    }
+
+    public Config getConfig() {
+        return config;
     }
 
     public List<Command> getCommands() {

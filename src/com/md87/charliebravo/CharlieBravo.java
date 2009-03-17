@@ -19,7 +19,8 @@ import com.dmdirc.parser.irc.callbacks.interfaces.IPost005;
  */
 public class CharlieBravo implements Runnable, IPost005, IDebugInfo, IDataIn, IDataOut {
 
-    protected final InputHandler handler = new InputHandler();
+    protected final Config config = new Config();
+    protected final InputHandler handler = new InputHandler(config);
     
     public void run() {
         while (true) {
@@ -41,6 +42,7 @@ public class CharlieBravo implements Runnable, IPost005, IDebugInfo, IDataIn, ID
 
     public void onPost005(final IRCParser tParser) {
         tParser.joinChannel("#MD87");
+        tParser.joinChannel("#MDbot");
     }
 
     public void onDebugInfo(final IRCParser tParser, final int nLevel, final String sData) {

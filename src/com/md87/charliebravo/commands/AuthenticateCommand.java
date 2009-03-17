@@ -32,6 +32,10 @@ public class AuthenticateCommand implements Command {
                 final String openid = result.get(1).trim();
                 handler.getParser().getClientInfoOrFake(response.getSource())
                         .getMap().put("OpenID", openid);
+                handler.getConfig().setOption(openid, "internal.lastseen",
+                        System.currentTimeMillis());
+                handler.getConfig().setOption(openid, "internal.lastuser",
+                        handler.getParser().getClientInfoOrFake(response.getSource()).toString());
                 response.sendMessage("You are now authenticated as " + openid, true);
             }
         }
