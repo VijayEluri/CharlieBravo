@@ -84,7 +84,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
 
     public void onChannelMessage(final IRCParser tParser, final ChannelInfo cChannel,
             final ChannelClientInfo cChannelClient, final String sMessage, final String sHost) {
-        if (sMessage.matches("^" + Matcher.quoteReplacement(tParser.getMyNickname()) + "[,:!] .*")) {
+        if (sMessage.matches("^(?i)" + Matcher.quoteReplacement(tParser.getMyNickname()) + "[,:!] .*")) {
             handleInput(ClientInfo.parseHost(sHost), cChannel.getName(),
                     sMessage.substring(tParser.getMyNickname().length() + 2));
         }
