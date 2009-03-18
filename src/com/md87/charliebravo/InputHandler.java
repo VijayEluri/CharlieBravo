@@ -84,10 +84,21 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
 
     public void onChannelMessage(final IRCParser tParser, final ChannelInfo cChannel,
             final ChannelClientInfo cChannelClient, final String sMessage, final String sHost) {
-        if (sMessage.matches("^(?i)" + Matcher.quoteReplacement(tParser.getMyNickname()) + "[,:!] .*")) {
-            handleInput(ClientInfo.parseHost(sHost), cChannel.getName(),
-                    sMessage.substring(tParser.getMyNickname().length() + 2));
+        for (String nick : getNicknames()) {
+            if (sMessage.matches("^(?i)" + Matcher.quoteReplacement(nick) + "[,:!] .*")) {
+                handleInput(ClientInfo.parseHost(sHost), cChannel.getName(),
+                        sMessage.substring(tParser.getMyNickname().length() + 2));
+                break;
+            }
         }
+    }
+
+    protected String[] getNicknames() {
+        return new String[] {
+            parser.getMyNickname(),
+            parser.getMyNickname().replaceAll("[a-z]", ""),
+            parser.getMyNickname().replaceAll("[^a-zA-Z]", ""),
+        };
     }
 
     public void onPrivateMessage(final IRCParser tParser, final String sMessage, final String sHost) {
