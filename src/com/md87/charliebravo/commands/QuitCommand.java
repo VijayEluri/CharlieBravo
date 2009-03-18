@@ -6,6 +6,7 @@
 package com.md87.charliebravo.commands;
 
 import com.md87.charliebravo.Command;
+import com.md87.charliebravo.CommandOptions;
 import com.md87.charliebravo.InputHandler;
 import com.md87.charliebravo.Response;
 
@@ -13,6 +14,7 @@ import com.md87.charliebravo.Response;
  *
  * @author chris
  */
+@CommandOptions(requireAuthorisation=true, requireLevel=100)
 public class QuitCommand implements Command {
 
     /** {@inheritDoc} */

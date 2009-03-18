@@ -89,4 +89,8 @@ public class Config implements Runnable {
         }
     }
 
+    public ConfigFile getConfigfile() {
+        return configfile;
+    }
+
 }

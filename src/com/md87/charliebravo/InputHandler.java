@@ -20,12 +20,14 @@ import com.md87.charliebravo.commands.HelpCommand;
 import com.md87.charliebravo.commands.IssueCommand;
 import com.md87.charliebravo.commands.QuitCommand;
 import com.md87.charliebravo.commands.SetCommand;
+import com.md87.charliebravo.commands.SkillCommand;
 import com.md87.charliebravo.commands.TranslateCommand;
 import com.md87.charliebravo.commands.WhoisCommand;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 /**
  *
@@ -54,6 +56,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
         commands.add(new IssueCommand());
         commands.add(new GitCommand());
         commands.add(new SetCommand());
+        commands.add(new SkillCommand());
     }
 
     public Config getConfig() {
@@ -81,9 +84,9 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
 
     public void onChannelMessage(final IRCParser tParser, final ChannelInfo cChannel,
             final ChannelClientInfo cChannelClient, final String sMessage, final String sHost) {
-        if (sMessage.startsWith(tParser.getMyNickname() + ", ")) {
+        if (sMessage.matches("^" + Matcher.quoteReplacement(tParser.getMyNickname()) + "[,:!] .*")) {
             handleInput(ClientInfo.parseHost(sHost), cChannel.getName(),
-                    sMessage.substring((tParser.getMyNickname() + ", ").length()));
+                    sMessage.substring(tParser.getMyNickname().length() + 2));
         }
     }
 
@@ -92,6 +95,14 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
     }
 
     protected void handleInput(final String source, final String target, final String text) {
+        new Thread(new Runnable() {
+            public void run() {
+                handleInputImpl(source, target, text);
+            }
+        }).start();
+    }
+
+    protected void handleInputImpl(final String source, final String target, final String text) {
         final Response response = new Response(parser, source, target);
         Command command = null;
         int index = 0;
@@ -116,7 +127,59 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
             }
 
             if (command != null) {
-                command.execute(this, response, text.substring(Math.min(text.length(), index)));
+                boolean cont = true;
+
+                if (command.getClass().isAnnotationPresent(CommandOptions.class)) {
+                    final CommandOptions opts = command.getClass()
+                            .getAnnotation(CommandOptions.class);
+
+                    final String id = (String) parser.getClientInfoOrFake(source)
+                            .getMap().get("OpenID");
+
+                    if (opts.requireAuthorisation() && id == null) {
+                        response.sendMessage("You must be authorised to use that command", true);
+                        cont = false;
+                    } else if (opts.requireLevel() > -1 &&
+                            (!config.hasOption(id, "admin.level")
+                            || (Integer.valueOf(config.getOption(id, "admin.level"))
+                            < opts.requireLevel()))) {
+                        response.sendMessage("You have insufficient access to " +
+                                "use that command", true);
+                        response.addFollowup(new LevelErrorFollowup(response.getSource(),
+                                opts.requireLevel(),
+                                config.hasOption(id, "admin.level")
+                                ? Integer.valueOf(config.getOption(id, "admin.level")) : -1));
+                        cont = false;
+                    } else {
+                        int count = 0;
+                        final StringBuilder missing = new StringBuilder();
+                        
+                        for (String setting : opts.requiredSettings()) {
+
+                            if (!config.hasOption(id, setting)) {
+                                if (missing.length() > 0) {
+                                    missing.append(", ");
+                                }
+
+                                count++;
+                                missing.append(setting);
+                            }
+                        }
+
+                        if (count > 0) {
+                            cont = false;
+                            response.sendRawMessage("You must have the following setting"
+                                    + (count == 1 ? "" : "s")
+                                    + " in order to use that command, " + response.getSource()
+                                    + ": " + missing.toString()
+                                    .replaceAll("^(.*), (.*?)$", "$1 and $2") + ".");
+                        }
+                    }
+                }
+
+                if (cont) {
+                    command.execute(this, response, text.substring(Math.min(text.length(), index)));
+                }
             }
         } catch (Throwable ex) {
             response.sendMessage("an error has occured: " + ex.getMessage());
@@ -129,6 +192,31 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
             }
             responses.put(target, response);
         }
+    }
+
+    protected static class LevelErrorFollowup implements Followup {
+
+        private final String source;
+        private final int required, desired;
+
+        public LevelErrorFollowup(String source, int required, int desired) {
+            this.source = source;
+            this.required = required;
+            this.desired = desired;
+        }
+
+        public boolean matches(String line) {
+            return line.equalsIgnoreCase("details");
+        }
+
+        public void execute(InputHandler handler, Response response, String line) throws Exception {
+            final boolean you = response.getSource().equals(source);
+            response.sendMessage("that command requires level " + required
+                    + " access, but " + (you ? "you" : source) + " "
+                    + (desired == -1 ? "do" + (you ? "" : "es") + " not have any assigned level"
+                    : "only ha" + (you ? "ve" : "s") + " level " + desired));
+        }
+
     }
 
     protected static class StacktraceFollowup implements Followup {

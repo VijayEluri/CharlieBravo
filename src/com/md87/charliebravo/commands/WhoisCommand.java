@@ -6,8 +6,8 @@
 package com.md87.charliebravo.commands;
 
 import com.dmdirc.parser.irc.ClientInfo;
+import com.dmdirc.ui.messages.Formatter;
 import com.md87.charliebravo.Command;
-import com.md87.charliebravo.Formatter;
 import com.md87.charliebravo.InputHandler;
 import com.md87.charliebravo.Response;
 
@@ -44,19 +44,20 @@ public class WhoisCommand implements Command {
                 }
             } else {
                 final String openid = (String) ci.getMap().get("OpenID");
+                final boolean you = ci.getNickname().equals(response.getSource());
 
                 if (openid == null) {
-                    response.sendMessage(ci.getNickname() + " has not authenticated with me", true);
+                    response.sendMessage((you ? "You have" : ci.getNickname() + " has")
+                            + " not authenticated with me", true);
                 } else {
                     final StringBuilder extra = new StringBuilder();
 
                     if (handler.getConfig().hasOption(openid, "admin.level")) {
-                        extra.append(", and has access level ");
+                        extra.append(", and " + (you ? "have" : "has") + " access level ");
                         extra.append(handler.getConfig().getOption(openid, "admin.level"));
                     }
 
-                    response.sendMessage((ci.getNickname().equals(response.getSource()) ?
-                            "you are " : ci.getNickname() + " is")
+                    response.sendMessage((you ? "you are" : ci.getNickname() + " is")
                             + " authenticated as " + openid + extra);
                 }
             }
