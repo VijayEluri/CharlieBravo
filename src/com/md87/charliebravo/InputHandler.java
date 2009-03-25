@@ -18,6 +18,7 @@ import com.md87.charliebravo.commands.GitCommand;
 import com.md87.charliebravo.commands.GoogleCommand;
 import com.md87.charliebravo.commands.HelpCommand;
 import com.md87.charliebravo.commands.IssueCommand;
+import com.md87.charliebravo.commands.NewzbinCommand;
 import com.md87.charliebravo.commands.QuitCommand;
 import com.md87.charliebravo.commands.SetCommand;
 import com.md87.charliebravo.commands.SkillCommand;
@@ -41,6 +42,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
 
     protected final List<Command> commands = new ArrayList<Command>();
     protected final Map<String, Response> responses = new HashMap<String, Response>();
+    protected final Map<String, String> snippets = new HashMap<String, String>();
 
     public InputHandler(final Config config) {
         this.config = config;
@@ -57,6 +59,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
         commands.add(new GitCommand());
         commands.add(new SetCommand());
         commands.add(new SkillCommand());
+        commands.add(new NewzbinCommand());
     }
 
     public Config getConfig() {
@@ -87,7 +90,23 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
         for (String nick : getNicknames()) {
             if (sMessage.matches("^(?i)" + Matcher.quoteReplacement(nick) + "[,:!] .*")) {
                 handleInput(ClientInfo.parseHost(sHost), cChannel.getName(),
-                        sMessage.substring(tParser.getMyNickname().length() + 2));
+                        sMessage.substring(nick.length() + 2));
+                break;
+            } else if (sMessage.matches("^(?i)" + Matcher.quoteReplacement(nick) + "\\?")
+                    && snippets.containsKey(cChannel.getName())) {
+                handleInput(ClientInfo.parseHost(sHost), cChannel.getName(),
+                        snippets.get(cChannel.getName()));
+                break;
+            }
+        }
+
+        for (Map.Entry<String, String> snippet : config.getConfigfile()
+                .getKeyDomain("snippets").entrySet()) {
+            System.out.println("Snippet test: " + snippet.getKey());
+            if (sMessage.matches(snippet.getKey())) {
+                snippets.put(cChannel.getName(), sMessage.replaceFirst(snippet.getKey(),
+                        snippet.getValue()));
+                System.out.println("Snippet: " + snippets.get(cChannel.getName()));
                 break;
             }
         }
@@ -98,6 +117,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
             parser.getMyNickname(),
             parser.getMyNickname().replaceAll("[a-z]", ""),
             parser.getMyNickname().replaceAll("[^a-zA-Z]", ""),
+            parser.getMyNickname().replaceAll("[^A-Z]", ""),
         };
     }
 
