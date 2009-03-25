@@ -53,7 +53,7 @@ public class GitCommand implements Command {
                 matcher.find();
                 final String commitHash = matcher.group(1);
 
-                matcher = Pattern.compile("<div class='commit-subject'>(.*?)</div>")
+                matcher = Pattern.compile("<div class='commit-subject'>(.*?)(<a .*?)?</div>")
                         .matcher(builder);
                 matcher.find();
                 final String commitSubject = matcher.group(1);
