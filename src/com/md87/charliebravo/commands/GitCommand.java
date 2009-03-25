@@ -12,9 +12,7 @@ import com.md87.charliebravo.InputHandler;
 import com.md87.charliebravo.Response;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
