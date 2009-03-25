@@ -20,6 +20,7 @@ import com.md87.charliebravo.commands.HelpCommand;
 import com.md87.charliebravo.commands.IssueCommand;
 import com.md87.charliebravo.commands.NewzbinCommand;
 import com.md87.charliebravo.commands.QuitCommand;
+import com.md87.charliebravo.commands.ReloadCommand;
 import com.md87.charliebravo.commands.SetCommand;
 import com.md87.charliebravo.commands.SkillCommand;
 import com.md87.charliebravo.commands.TranslateCommand;
@@ -60,6 +61,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage {
         commands.add(new SetCommand());
         commands.add(new SkillCommand());
         commands.add(new NewzbinCommand());
+        commands.add(new ReloadCommand());
     }
 
     public Config getConfig() {
