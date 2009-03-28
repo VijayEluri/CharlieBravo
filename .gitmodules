@@ -7,3 +7,6 @@
 [submodule "externals/evetool"]
 	path = externals/evetool
 	url = ssh://renji.org.uk/home/chris/git/evetool/
+[submodule "externals/util"]
+	path = externals/util
+	url = ssh://renji/home/chris/git/util
