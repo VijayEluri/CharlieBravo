@@ -9,6 +9,7 @@ import com.dmdirc.parser.irc.ChannelClientInfo;
 import com.dmdirc.parser.irc.ChannelInfo;
 import com.dmdirc.parser.irc.ClientInfo;
 import com.dmdirc.parser.irc.IRCParser;
+import com.dmdirc.parser.irc.callbacks.interfaces.IChannelKick;
 import com.dmdirc.parser.irc.callbacks.interfaces.IChannelMessage;
 import com.dmdirc.parser.irc.callbacks.interfaces.IPrivateCTCP;
 import com.dmdirc.parser.irc.callbacks.interfaces.IPrivateMessage;
@@ -42,7 +43,7 @@ import net.miginfocom.Base64;
  *
  * @author chris
  */
-public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateCTCP {
+public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateCTCP, IChannelKick {
 
     protected IRCParser parser;
 
@@ -99,6 +100,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
         parser.getCallbackManager().addCallback("OnChannelMessage", this);
         parser.getCallbackManager().addCallback("OnPrivateMessage", this);
         parser.getCallbackManager().addCallback("OnPrivateCTCP", this);
+        parser.getCallbackManager().addCallback("OnChannelKick", this);
     }
 
     public void onChannelMessage(final IRCParser tParser, final ChannelInfo cChannel,
@@ -120,7 +122,6 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
 
         for (Map.Entry<String, String> snippet : config.getConfigfile()
                 .getKeyDomain("snippets").entrySet()) {
-            System.out.println("Snippet test: " + snippet.getKey());
             if (sMessage.matches(snippet.getKey())) {
                 if (!snippets.containsKey(cChannel.getName())) {
                     snippets.put(cChannel.getName(), new RollingList<String>(10));
@@ -183,6 +184,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
 
                 if (idp.equals(info)) {
                     client.getMap().put("OpenID", idp);
+                    parser.sendNotice(client.getNickname(), "You are now authenticated as " + idp);
                 }
             }
         }
@@ -285,6 +287,14 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
                 response.addFollowups(responses.get(target).getFollowups());
             }
             responses.put(target, response);
+        }
+    }
+
+    public void onChannelKick(IRCParser tParser, ChannelInfo cChannel,
+            ChannelClientInfo cKickedClient, ChannelClientInfo cKickedByClient,
+            String sReason, String sKickedByHost) {
+        if (cKickedClient.getClient().equals(parser.getMyself())) {
+            tParser.joinChannel(cChannel.getName());
         }
     }
 
