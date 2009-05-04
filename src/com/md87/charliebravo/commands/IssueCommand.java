@@ -55,7 +55,8 @@ public class IssueCommand implements Command {
                 response.sendMessage("issue " + data.get("id") + " is \""
                         + data.get("summary").substring(9) + "\". Current "
                         + "status is " + data.get("status") + " ("
-                        + data.get("resolution") + ")");
+                        + data.get("resolution") + "). See http://bugs.dmdirc.com/view/"
+                        + data.get("id"));
                 response.addFollowup(new IssueFollowup(data));
             }
             
