@@ -53,6 +53,8 @@ public class CharlieBravo implements Runnable, IPost005, IDebugInfo, IDataIn, ID
 
     public void onPost005(final IRCParser tParser) {
         tParser.joinChannel("#MD87");
+        tParser.joinChannel("#DMDirc");
+        tParser.joinChannel("#DMDirc.dev");
         tParser.joinChannel("#MDbot");
     }
 
