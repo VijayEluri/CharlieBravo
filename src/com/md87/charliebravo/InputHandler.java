@@ -28,6 +28,7 @@ import com.md87.charliebravo.commands.ReloadCommand;
 import com.md87.charliebravo.commands.SetCommand;
 import com.md87.charliebravo.commands.SkillCommand;
 import com.md87.charliebravo.commands.SnippetsCommand;
+import com.md87.charliebravo.commands.LawCommand;
 import com.md87.charliebravo.commands.TranslateCommand;
 import com.md87.charliebravo.commands.WhoisCommand;
 import com.md87.util.crypto.ArcFourEncrypter;
@@ -72,6 +73,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
         commands.add(new NewzbinCommand());
         commands.add(new ReloadCommand());
         commands.add(new DefineCommand());
+        commands.add(new LawCommand());
     }
 
     public Config getConfig() {
