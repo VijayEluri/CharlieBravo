@@ -216,10 +216,13 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
 
             if (command == null) {
                 for (Command pcommand : commands) {
-                    if (text.toLowerCase().startsWith(pcommand.getClass()
-                            .getSimpleName().replace("Command", "").toLowerCase())) {
+                    if (text.equalsIgnoreCase(pcommand.getClass()
+                            .getSimpleName().replace("Command", "")) ||
+                            text.toLowerCase().startsWith(pcommand.getClass()
+                            .getSimpleName().replace("Command", "").toLowerCase() + " ")) {
                         command = pcommand;
                         index = pcommand.getClass().getSimpleName().length() - 6;
+                        break;
                     }
                 }
             }
