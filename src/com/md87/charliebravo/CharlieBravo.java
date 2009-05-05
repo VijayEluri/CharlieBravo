@@ -21,15 +21,18 @@ public class CharlieBravo implements Runnable, IPost005, IDebugInfo, IDataIn, ID
 
     protected final Config config = new Config();
     protected final InputHandler handler = new InputHandler(config);
+    protected final String[] servers = {"irc.quakenet.org","83.140.172.211"};
     
     public void run() {
+        int server = 0;
+
         while (true) {
             final MyInfo myinfo = new MyInfo();
             myinfo.setNickname("CharlieBravo");
             myinfo.setRealname("Charlie Bravo");
             myinfo.setUsername("charliebravo");
 
-            final IRCParser parser = new IRCParser(myinfo, new ServerInfo("irc.quakenet.org", 6667, ""));
+            final IRCParser parser = new IRCParser(myinfo, new ServerInfo(servers[server], 6667, ""));
             handler.setParser(parser);
 
             parser.getCallbackManager().addCallback("OnPost005", this);
@@ -37,6 +40,14 @@ public class CharlieBravo implements Runnable, IPost005, IDebugInfo, IDataIn, ID
             parser.getCallbackManager().addCallback("OnDataIn", this);
             parser.getCallbackManager().addCallback("OnDataOut", this);
             parser.run();
+
+            server = ++server % servers.length;
+
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException ex) {
+                // Don't care!
+            }
         }
     }
 
