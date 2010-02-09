@@ -1,6 +1,23 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (c) 2009-2010 Chris Smith
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.md87.charliebravo;
@@ -29,7 +46,9 @@ import com.md87.charliebravo.commands.SetCommand;
 import com.md87.charliebravo.commands.SkillCommand;
 import com.md87.charliebravo.commands.SnippetsCommand;
 import com.md87.charliebravo.commands.LawCommand;
+import com.md87.charliebravo.commands.QuoteCommand;
 import com.md87.charliebravo.commands.TranslateCommand;
+import com.md87.charliebravo.commands.TwitterCommand;
 import com.md87.charliebravo.commands.WhoisCommand;
 import com.md87.util.crypto.ArcFourEncrypter;
 import java.util.ArrayList;
@@ -74,6 +93,8 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
         commands.add(new ReloadCommand());
         commands.add(new DefineCommand());
         commands.add(new LawCommand());
+        commands.add(new QuoteCommand());
+        commands.add(new TwitterCommand());
     }
 
     public Config getConfig() {
@@ -283,6 +304,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
                 }
             }
         } catch (Throwable ex) {
+            ex.printStackTrace();
             response.sendMessage("an error has occured: " + ex.getMessage());
             response.addFollowup(new StacktraceFollowup(ex));
         }

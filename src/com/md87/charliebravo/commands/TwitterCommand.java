@@ -23,27 +23,28 @@
 package com.md87.charliebravo.commands;
 
 import com.md87.charliebravo.Command;
+import com.md87.charliebravo.CommandOptions;
 import com.md87.charliebravo.InputHandler;
 import com.md87.charliebravo.Response;
+import twitter4j.Twitter;
 
 /**
  *
  * @author chris
  */
-public class HelpCommand implements Command {
+@CommandOptions(requireAuthorisation=true, requiredSettings={"twitter.username","twitter.password"})
+public class TwitterCommand implements Command {
 
     public void execute(InputHandler handler, Response response, String line) throws Exception {
-        final StringBuilder builder = new StringBuilder();
+        final String openID = (String) handler.getParser().getClientInfoOrFake(response.getSource())
+                .getMap().get("OpenID");
 
-        for (Command comm : handler.getCommands()) {
-            if (builder.length() > 0) {
-                builder.append(", ");
-            }
+        String user = handler.getConfig().getOption(openID, "twitter.username");
+        String pass = handler.getConfig().getOption(openID, "twitter.password");
 
-            builder.append(comm.getClass().getSimpleName().replace("Command", "").toLowerCase());
-        }
-
-        response.sendMessage("I know the following commands: " + builder.toString());
+        Twitter twitter = new Twitter(user, pass);
+        twitter.updateStatus(line);
+        response.sendMessage("Done", true);
     }
 
 }

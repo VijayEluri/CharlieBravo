@@ -22,28 +22,48 @@
 
 package com.md87.charliebravo.commands;
 
+import com.dmdirc.util.Downloader;
 import com.md87.charliebravo.Command;
 import com.md87.charliebravo.InputHandler;
 import com.md87.charliebravo.Response;
+
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author chris
  */
-public class HelpCommand implements Command {
+public class QuoteCommand implements Command {
+
+    protected static final String URL = "http://apps.md87.co.uk/quotes/rss?id=%s";
+
+    protected static final Pattern QUOTE_MATCHER = Pattern.compile(".*<description><![CDATA[(.*?)]]></description>.*");
 
     public void execute(InputHandler handler, Response response, String line) throws Exception {
-        final StringBuilder builder = new StringBuilder();
+        if (line.isEmpty()) {
+            response.sendMessage("You need to specify a quote number", true);
+        } else if (!line.matches("^[0-9]+$")) {
+            response.sendMessage("You need to specify a valid quote number", true);
+        } else {
+            final List<String> result = Downloader.getPage(String.format(URL, line));
+            final StringBuilder builder = new StringBuilder();
 
-        for (Command comm : handler.getCommands()) {
-            if (builder.length() > 0) {
-                builder.append(", ");
+            for (String rline : result) {
+                builder.append(rline);
             }
 
-            builder.append(comm.getClass().getSimpleName().replace("Command", "").toLowerCase());
+            final Matcher matcher = QUOTE_MATCHER.matcher(builder);
+
+            if (matcher.matches()) {
+                final String quote = matcher.group(1);
+                response.sendMessage("quote " + line + " is: " + quote);
+            } else {
+                response.sendMessage("There were no results for that quote", true);
+            }
         }
 
-        response.sendMessage("I know the following commands: " + builder.toString());
     }
 
 }
