@@ -22,19 +22,22 @@
 
 package com.md87.charliebravo;
 
+import com.dmdirc.parser.common.MyInfo;
+import com.dmdirc.parser.interfaces.Parser;
+import com.dmdirc.parser.interfaces.callbacks.DataInListener;
+import com.dmdirc.parser.interfaces.callbacks.DataOutListener;
+import com.dmdirc.parser.interfaces.callbacks.DebugInfoListener;
+import com.dmdirc.parser.interfaces.callbacks.Post005Listener;
 import com.dmdirc.parser.irc.IRCParser;
-import com.dmdirc.parser.irc.MyInfo;
 import com.dmdirc.parser.irc.ServerInfo;
-import com.dmdirc.parser.irc.callbacks.interfaces.IDataIn;
-import com.dmdirc.parser.irc.callbacks.interfaces.IDataOut;
-import com.dmdirc.parser.irc.callbacks.interfaces.IDebugInfo;
-import com.dmdirc.parser.irc.callbacks.interfaces.IPost005;
+import java.util.Date;
 
 /**
  *
  * @author chris
  */
-public class CharlieBravo implements Runnable, IPost005, IDebugInfo, IDataIn, IDataOut {
+public class CharlieBravo implements Runnable, Post005Listener,
+        DebugInfoListener, DataInListener, DataOutListener {
 
     protected final Config config = new Config();
     protected final InputHandler handler = new InputHandler(config);
@@ -52,10 +55,10 @@ public class CharlieBravo implements Runnable, IPost005, IDebugInfo, IDataIn, ID
             final IRCParser parser = new IRCParser(myinfo, new ServerInfo(servers[server], 6667, ""));
             handler.setParser(parser);
 
-            parser.getCallbackManager().addCallback("OnPost005", this);
-            parser.getCallbackManager().addCallback("OnDebugInfo", this);
-            parser.getCallbackManager().addCallback("OnDataIn", this);
-            parser.getCallbackManager().addCallback("OnDataOut", this);
+            parser.getCallbackManager().addCallback(Post005Listener.class, this);
+            parser.getCallbackManager().addCallback(DebugInfoListener.class, this);
+            parser.getCallbackManager().addCallback(DataInListener.class, this);
+            parser.getCallbackManager().addCallback(DataOutListener.class, this);
             parser.run();
 
             server = ++server % servers.length;
@@ -68,14 +71,16 @@ public class CharlieBravo implements Runnable, IPost005, IDebugInfo, IDataIn, ID
         }
     }
 
-    public void onPost005(final IRCParser tParser) {
+    @Override
+    public void onPost005(final Parser tParser, final Date date) {
         tParser.joinChannel("#MD87");
         tParser.joinChannel("#DMDirc");
         tParser.joinChannel("#DMDirc.dev");
         tParser.joinChannel("#MDbot");
     }
 
-    public void onDebugInfo(final IRCParser tParser, final int nLevel, final String sData) {
+    @Override
+    public void onDebugInfo(final Parser tParser, final Date date, final int nLevel, final String sData) {
         System.out.println(nLevel + ": " + sData);
     }
 
@@ -83,11 +88,13 @@ public class CharlieBravo implements Runnable, IPost005, IDebugInfo, IDataIn, ID
         new Thread(new CharlieBravo()).start();
     }
 
-    public void onDataIn(final IRCParser tParser, final String sData) {
+    @Override
+    public void onDataIn(final Parser tParser, final Date date, final String sData) {
         System.out.println("<<< " + sData);
     }
 
-    public void onDataOut(final IRCParser tParser, final String sData, final boolean bFromParser) {
+    @Override
+    public void onDataOut(final Parser tParser, final Date date, final String sData, final boolean bFromParser) {
         System.out.println(">>> " + sData);
     }
 

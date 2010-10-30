@@ -55,16 +55,16 @@ public class AuthenticateCommand implements Command {
                 final int id = handler.getConfig().getConfigfile().getKeyDomain("cookies").size();
                 
                 final String openid = result.get(1).trim();
-                handler.getParser().getClientInfoOrFake(response.getSource())
+                handler.getParser().getClient(response.getSource())
                         .getMap().put("OpenID", openid);
-                handler.getParser().getClientInfoOrFake(response.getSource())
+                handler.getParser().getClient(response.getSource())
                         .getMap().put("Key1", key1);
-                handler.getParser().getClientInfoOrFake(response.getSource())
+                handler.getParser().getClient(response.getSource())
                         .getMap().put("Cookie", "SET");
                 handler.getConfig().setOption(openid, "internal.lastseen",
                         System.currentTimeMillis());
                 handler.getConfig().setOption(openid, "internal.lastuser",
-                        handler.getParser().getClientInfoOrFake(response.getSource()).toString());
+                        handler.getParser().getClient(response.getSource()).toString());
                 response.sendMessage("You are now authenticated as " + openid, true);
 
                 handler.getConfig().getConfigfile().getKeyDomain("cookies")

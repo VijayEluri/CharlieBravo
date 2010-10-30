@@ -42,7 +42,7 @@ import uk.co.md87.evetool.api.wrappers.SkillList;
 public class SkillCommand implements Command {
 
     public void execute(InputHandler handler, Response response, String line) throws Exception {
-        final String openID = (String) handler.getParser().getClientInfoOrFake(response.getSource())
+        final String openID = (String) handler.getParser().getClient(response.getSource())
                 .getMap().get("OpenID");
 
         if (openID == null) {

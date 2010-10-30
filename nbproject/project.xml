@@ -6,6 +6,8 @@
             <name>charliebravo</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
+                <root id="src.src5.dir"/>
+                <root id="src.src6.dir"/>
                 <root id="src.src4.dir"/>
                 <root id="src.src2.dir"/>
                 <root id="src.src3.dir"/>

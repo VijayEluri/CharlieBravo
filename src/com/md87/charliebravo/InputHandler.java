@@ -22,14 +22,17 @@
 
 package com.md87.charliebravo;
 
-import com.dmdirc.parser.irc.ChannelClientInfo;
-import com.dmdirc.parser.irc.ChannelInfo;
-import com.dmdirc.parser.irc.ClientInfo;
+
+import com.dmdirc.parser.interfaces.ChannelClientInfo;
+import com.dmdirc.parser.interfaces.ChannelInfo;
+import com.dmdirc.parser.interfaces.ClientInfo;
+import com.dmdirc.parser.interfaces.Parser;
+import com.dmdirc.parser.interfaces.callbacks.ChannelKickListener;
+import com.dmdirc.parser.interfaces.callbacks.ChannelMessageListener;
+import com.dmdirc.parser.interfaces.callbacks.PrivateCtcpListener;
+import com.dmdirc.parser.interfaces.callbacks.PrivateMessageListener;
 import com.dmdirc.parser.irc.IRCParser;
-import com.dmdirc.parser.irc.callbacks.interfaces.IChannelKick;
-import com.dmdirc.parser.irc.callbacks.interfaces.IChannelMessage;
-import com.dmdirc.parser.irc.callbacks.interfaces.IPrivateCTCP;
-import com.dmdirc.parser.irc.callbacks.interfaces.IPrivateMessage;
+
 import com.dmdirc.util.RollingList;
 import com.md87.charliebravo.commands.AuthenticateCommand;
 import com.md87.charliebravo.commands.CalcCommand;
@@ -51,6 +54,7 @@ import com.md87.charliebravo.commands.TranslateCommand;
 import com.md87.charliebravo.commands.WhoisCommand;
 import com.md87.util.crypto.ArcFourEncrypter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +66,7 @@ import net.miginfocom.Base64;
  *
  * @author chris
  */
-public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateCTCP, IChannelKick {
+public class InputHandler implements ChannelMessageListener, PrivateMessageListener, PrivateCtcpListener, ChannelKickListener {
 
     protected IRCParser parser;
 
@@ -118,24 +122,25 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
     public void setParser(final IRCParser parser) {
         this.parser = parser;
         
-        parser.getCallbackManager().addCallback("OnChannelMessage", this);
-        parser.getCallbackManager().addCallback("OnPrivateMessage", this);
-        parser.getCallbackManager().addCallback("OnPrivateCTCP", this);
-        parser.getCallbackManager().addCallback("OnChannelKick", this);
+        parser.getCallbackManager().addCallback(ChannelMessageListener.class, this);
+        parser.getCallbackManager().addCallback(PrivateMessageListener.class, this);
+        parser.getCallbackManager().addCallback(PrivateCtcpListener.class, this);
+        parser.getCallbackManager().addCallback(ChannelKickListener.class, this);
     }
 
-    public void onChannelMessage(final IRCParser tParser, final ChannelInfo cChannel,
+    @Override
+    public void onChannelMessage(final Parser tParser, final Date date, final ChannelInfo cChannel,
             final ChannelClientInfo cChannelClient, final String sMessage, final String sHost) {
         for (String nick : getNicknames()) {
             if (sMessage.matches("^(?i)" + Matcher.quoteReplacement(nick) + "[,:!] .*")) {
-                handleInput(ClientInfo.parseHost(sHost), cChannel.getName(),
+                handleInput(tParser.parseHostmask(sHost)[0], cChannel.getName(),
                         sMessage.substring(nick.length() + 2));
                 break;
             } else if (sMessage.matches("^(?i)" + Matcher.quoteReplacement(nick) + "\\?")
                     && snippets.containsKey(cChannel.getName())) {
                 final RollingList<String> snips = snippets.get(cChannel.getName());
                 final String snippet = snips.get(snips.getList().size() - 1);
-                handleInput(ClientInfo.parseHost(sHost), cChannel.getName(), snippet);
+                handleInput(tParser.parseHostmask(sHost)[0], cChannel.getName(), snippet);
                 snips.remove(snippet);
                 break;
             }
@@ -165,13 +170,15 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
         };
     }
 
-    public void onPrivateMessage(final IRCParser tParser, final String sMessage, final String sHost) {
-        handleInput(ClientInfo.parseHost(sHost), ClientInfo.parseHost(sHost), sMessage);
+    @Override
+    public void onPrivateMessage(final Parser tParser, final Date date, final String sMessage, final String sHost) {
+        handleInput(tParser.parseHostmask(sHost)[0], tParser.parseHostmask(sHost)[0], sMessage);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
-    public void onPrivateCTCP(IRCParser tParser, String sType, String sMessage, String sHost) {
-        final ClientInfo client = tParser.getClientInfoOrFake(sHost);
+    public void onPrivateCTCP(Parser tParser, Date date, String sType, String sMessage, String sHost) {
+        final ClientInfo client = tParser.getClient(sHost);
         if ("COOKIE".equals(sType)) {
             final String status = (String) client.getMap().get("Cookie");
             final String key1 = (String) client.getMap().get("Key1");
@@ -179,7 +186,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
             final String idp = (String) client.getMap().get("OpenID-p");
             
             if ("GETKEY".equals(sMessage) && "SET".equals(status)) {
-                parser.sendCTCP(ClientInfo.parseHost(sHost), "COOKIE", "SETKEY " + key1);
+                parser.sendCTCP(tParser.parseHostmask(sHost)[0], "COOKIE", "SETKEY " + key1);
                 client.getMap().put("Cookie", "GETKEY");
             } else if (sMessage.startsWith("OFFER")) {
                 final String what = sMessage.substring(6);
@@ -197,7 +204,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
 
                 client.getMap().put("Cookie", "OFFER");
                 client.getMap().put("Key2", newkey2);
-                parser.sendCTCP(ClientInfo.parseHost(sHost), "COOKIE", "GET " + newkey2);
+                parser.sendCTCP(tParser.parseHostmask(sHost)[0], "COOKIE", "GET " + newkey2);
             } else if (sMessage.startsWith("SHOW") && "OFFER".equals(status)) {
                 final String payload = sMessage.substring(5);
                 final String info = new String(new ArcFourEncrypter(key1 + key2)
@@ -253,7 +260,7 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
                     final CommandOptions opts = command.getClass()
                             .getAnnotation(CommandOptions.class);
 
-                    final String id = (String) parser.getClientInfoOrFake(source)
+                    final String id = (String) parser.getClient(source)
                             .getMap().get("OpenID");
 
                     if (opts.requireAuthorisation() && id == null) {
@@ -315,10 +322,11 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
         }
     }
 
-    public void onChannelKick(IRCParser tParser, ChannelInfo cChannel,
+    @Override
+    public void onChannelKick(Parser tParser, Date date, ChannelInfo cChannel,
             ChannelClientInfo cKickedClient, ChannelClientInfo cKickedByClient,
             String sReason, String sKickedByHost) {
-        if (cKickedClient.getClient().equals(parser.getMyself())) {
+        if (cKickedClient.getClient().equals(parser.getLocalClient())) {
             tParser.joinChannel(cChannel.getName());
         }
     }

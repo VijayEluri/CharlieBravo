@@ -22,7 +22,7 @@
 
 package com.md87.charliebravo.commands;
 
-import com.dmdirc.parser.irc.ClientInfo;
+import com.dmdirc.parser.interfaces.ClientInfo;
 import com.md87.charliebravo.Command;
 import com.md87.charliebravo.CommandOptions;
 import com.md87.charliebravo.InputHandler;
@@ -36,7 +36,7 @@ import com.md87.charliebravo.Response;
 public class SetCommand implements Command {
 
     public void execute(InputHandler handler, Response response, String line) throws Exception {
-        final String openID = (String) handler.getParser().getClientInfoOrFake(response.getSource())
+        final String openID = (String) handler.getParser().getClient(response.getSource())
                 .getMap().get("OpenID");
         String target = openID;
         String value = line;
@@ -51,7 +51,7 @@ public class SetCommand implements Command {
                 final String user = line.substring(offset + 13);
                 value = line.substring(0, offset - 1);
                 
-                final ClientInfo client = handler.getParser().getClientInfo(user);
+                final ClientInfo client = handler.getParser().getClient(user);
 
                 if (client != null) {
                     if (client.getMap().get("OpenID") == null) {

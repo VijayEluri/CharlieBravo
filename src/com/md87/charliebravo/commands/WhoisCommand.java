@@ -22,7 +22,7 @@
 
 package com.md87.charliebravo.commands;
 
-import com.dmdirc.parser.irc.ClientInfo;
+import com.dmdirc.parser.interfaces.ClientInfo;
 import com.dmdirc.ui.messages.Formatter;
 import com.md87.charliebravo.Command;
 import com.md87.charliebravo.InputHandler;
@@ -39,7 +39,7 @@ public class WhoisCommand implements Command {
         if (line.isEmpty()) {
             response.sendRawMessage("Who would you like to whois, " + response.getSource() + "?");
         } else {
-            final ClientInfo ci = handler.getParser().getClientInfo(line);
+            final ClientInfo ci = handler.getParser().getClient(line);
 
             if (ci == null) {
                 if (handler.getConfig().hasOption(line, "internal.lastseen")) {

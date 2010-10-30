@@ -10,3 +10,9 @@
 [submodule "externals/dmdirc-plugins"]
 	path = externals/dmdirc-plugins
 	url = git://dmdirc.com/plugins
+[submodule "externals/dmdirc-util"]
+	path = externals/dmdirc-util
+	url = git://dmdirc.com/util
+[submodule "externals/dmdirc-parser"]
+	path = externals/dmdirc-parser
+	url = git://dmdirc.com/parser
