@@ -48,7 +48,6 @@ import com.md87.charliebravo.commands.SnippetsCommand;
 import com.md87.charliebravo.commands.LawCommand;
 import com.md87.charliebravo.commands.QuoteCommand;
 import com.md87.charliebravo.commands.TranslateCommand;
-import com.md87.charliebravo.commands.TwitterCommand;
 import com.md87.charliebravo.commands.WhoisCommand;
 import com.md87.util.crypto.ArcFourEncrypter;
 import java.util.ArrayList;
@@ -94,7 +93,6 @@ public class InputHandler implements IChannelMessage, IPrivateMessage, IPrivateC
         commands.add(new DefineCommand());
         commands.add(new LawCommand());
         commands.add(new QuoteCommand());
-        commands.add(new TwitterCommand());
     }
 
     public Config getConfig() {
