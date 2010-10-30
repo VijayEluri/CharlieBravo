@@ -1,6 +1,3 @@
-[submodule "externals/dmdirc-plugins"]
-	path = externals/dmdirc-plugins
-	url = ssh://renji.org.uk/home/chris/git/dmdirc-plugins/
 [submodule "externals/dmdirc"]
 	path = externals/dmdirc
 	url = ssh://renji.org.uk/home/dmdirc/git/client/
