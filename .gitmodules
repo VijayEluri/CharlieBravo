@@ -10,6 +10,3 @@
 [submodule "externals/util"]
 	path = externals/util
 	url = ssh://renji/home/chris/git/util
-[submodule "externals/twitter4j"]
-	path = externals/twitter4j
-	url = git://github.com/yusuke/twitter4j.git
