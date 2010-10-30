@@ -7,3 +7,6 @@
 [submodule "externals/util"]
 	path = externals/util
 	url = ssh://renji/home/chris/git/util
+[submodule "externals/dmdirc-plugins"]
+	path = externals/dmdirc-plugins
+	url = git://dmdirc.com/plugins
