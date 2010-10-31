@@ -23,7 +23,7 @@
 package com.md87.charliebravo.commands;
 
 import com.dmdirc.parser.interfaces.ClientInfo;
-import com.dmdirc.ui.messages.Formatter;
+import com.md87.charliebravo.CharlieBravo;
 import com.md87.charliebravo.Command;
 import com.md87.charliebravo.InputHandler;
 import com.md87.charliebravo.Response;
@@ -51,7 +51,7 @@ public class WhoisCommand implements Command {
                     }
 
                     response.sendMessage(line + " last authenticated with me "
-                            + Formatter.formatDuration((int)
+                            + CharlieBravo.formatDuration((int)
                             (System.currentTimeMillis() -
                             Long.valueOf(handler.getConfig().getOption(line, "internal.lastseen")))
                             / 1000)
