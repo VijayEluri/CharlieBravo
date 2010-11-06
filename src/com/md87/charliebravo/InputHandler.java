@@ -92,11 +92,11 @@ public class InputHandler implements ChannelMessageListener, PrivateMessageListe
         commands.add(new SetCommand());
         commands.add(new SkillCommand());
         commands.add(new SnippetsCommand());
-        commands.add(new NewzbinCommand());
+        // commands.add(new NewzbinCommand()); - broken
         commands.add(new ReloadCommand());
-        commands.add(new DefineCommand());
+        // commands.add(new DefineCommand()); - broken
         commands.add(new LawCommand());
-        commands.add(new QuoteCommand());
+        //commands.add(new QuoteCommand()); - broken
     }
 
     public Config getConfig() {

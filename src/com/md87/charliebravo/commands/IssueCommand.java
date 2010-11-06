@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.json.JSONObject;
 
 /**
  *
@@ -40,45 +41,83 @@ import java.util.regex.Pattern;
 public class IssueCommand implements Command {
 
     public void execute(InputHandler handler, Response response, String line) throws Exception {
-        if (line.isEmpty() || !line.matches("^[0-9]+$")) {
-            response.sendMessage("You need to specify an issue number", true);
+        if (line.matches("^[0-9]+$")) {
+            executeOldIssue(handler, response, line);
+        } else if (line.matches("^[A-Z]+-[0-9]+$")) {
+            executeNewIssue(handler, response, line);
         } else {
-            final List<String> result = Downloader.getPage("http://bugs.dmdirc.com/view.php?id="
-                    + line);
-            final StringBuilder builder = new StringBuilder();
+            response.sendMessage("You need to specify a valid issue number", true);
+        }
+    }
 
-            for (String resline : result) {
-                builder.append(resline);
-            }
+    protected void executeNewIssue(InputHandler handler, Response response, String line) throws Exception {
+        final List<String> result = Downloader.getPage("http://jira.dmdirc.com/rest/api/2.0.alpha1/issue/"
+                + line);
+        final StringBuilder builder = new StringBuilder();
 
-            if (builder.indexOf("APPLICATION ERROR #1100") > -1) {
-                response.sendMessage("That issue was not found", true);
-            } else if (builder.indexOf("<p>Access Denied.</p>") > -1) {
-                response.sendMessage("that issue is private. Please see "
-                        + "http://bugs.dmdirc.com/view/" + line);
-            } else {
-                final Map<String, String> data = new HashMap<String, String>();
-
-                final Pattern pattern = Pattern.compile(
-                        "<td class=\"category\".*?>\\s*(.*?)\\s*"
-                        + "</td>\\s*(?:<!--.*?-->\\s*)?<td.*?>\\s*(.*?)\\s*</td>",
-                        Pattern.CASE_INSENSITIVE + Pattern.DOTALL);
-                final Matcher matcher = pattern.matcher(builder);
-
-                while (matcher.find()) {
-                    data.put(matcher.group(1).toLowerCase(), matcher.group(2));
-                }
-
-                response.sendMessage("issue " + data.get("id") + " is \""
-                        + data.get("summary").substring(9) + "\". Current "
-                        + "status is " + data.get("status") + " ("
-                        + data.get("resolution") + "). See http://bugs.dmdirc.com/view/"
-                        + data.get("id"));
-                response.addFollowup(new IssueFollowup(data));
-            }
-            
+        for (String resline : result) {
+            builder.append(resline);
         }
 
+        final JSONObject json = new JSONObject(builder.toString());
+        final JSONObject fields = json.getJSONObject("fields");
+        final Map<String, String> data = new HashMap<String, String>();
+        data.put("id", json.getString("key"));
+
+        for (String key : JSONObject.getNames(fields)) {
+            JSONObject complexValue = fields.getJSONObject(key).optJSONObject("value");
+            String value;
+
+            if (complexValue == null) {
+                value = fields.getJSONObject(key).optString("value", "");
+            } else {
+                value = complexValue.optString("name", "");
+            }
+
+            data.put(fields.getJSONObject(key).optString("name", key), value);
+        }
+
+        response.sendMessage("issue " + data.get("id") + " is \""
+                + data.get("summary") + "\" and is currently "
+                + data.get("status").toLowerCase() + ". See http://jira.dmdirc.com/browse/"
+                + data.get("id"));
+        response.addFollowup(new IssueFollowup(data));
+    }
+
+    protected void executeOldIssue(InputHandler handler, Response response, String line) throws Exception {
+        final List<String> result = Downloader.getPage("http://bugs.dmdirc.com/view.php?id="
+                + line);
+        final StringBuilder builder = new StringBuilder();
+
+        for (String resline : result) {
+            builder.append(resline);
+        }
+
+        if (builder.indexOf("APPLICATION ERROR #1100") > -1) {
+            response.sendMessage("That issue was not found", true);
+        } else if (builder.indexOf("<p>Access Denied.</p>") > -1) {
+            response.sendMessage("that issue is private. Please see "
+                    + "http://bugs.dmdirc.com/view/" + line);
+        } else {
+            final Map<String, String> data = new HashMap<String, String>();
+
+            final Pattern pattern = Pattern.compile(
+                    "<td class=\"category\".*?>\\s*(.*?)\\s*"
+                    + "</td>\\s*(?:<!--.*?-->\\s*)?<td.*?>\\s*(.*?)\\s*</td>",
+                    Pattern.CASE_INSENSITIVE + Pattern.DOTALL);
+            final Matcher matcher = pattern.matcher(builder);
+
+            while (matcher.find()) {
+                data.put(matcher.group(1).toLowerCase(), matcher.group(2));
+            }
+
+            response.sendMessage("issue " + data.get("id") + " is \""
+                    + data.get("summary").substring(9) + "\". Current "
+                    + "status is " + data.get("status") + " ("
+                    + data.get("resolution") + "). See http://bugs.dmdirc.com/view/"
+                    + data.get("id"));
+            response.addFollowup(new IssueFollowup(data));
+        }
     }
 
     protected static class IssueFollowup implements Followup {
