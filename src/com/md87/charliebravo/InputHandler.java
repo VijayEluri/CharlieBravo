@@ -42,6 +42,7 @@ import com.md87.charliebravo.commands.GitCommand;
 import com.md87.charliebravo.commands.GoogleCommand;
 import com.md87.charliebravo.commands.HelpCommand;
 import com.md87.charliebravo.commands.IssueCommand;
+import com.md87.charliebravo.commands.IssueSearchCommand;
 import com.md87.charliebravo.commands.NewzbinCommand;
 import com.md87.charliebravo.commands.QuitCommand;
 import com.md87.charliebravo.commands.ReloadCommand;
@@ -97,6 +98,7 @@ public class InputHandler implements ChannelMessageListener, PrivateMessageListe
         // commands.add(new DefineCommand()); - broken
         commands.add(new LawCommand());
         //commands.add(new QuoteCommand()); - broken
+        commands.add(new IssueSearchCommand());
     }
 
     public Config getConfig() {
