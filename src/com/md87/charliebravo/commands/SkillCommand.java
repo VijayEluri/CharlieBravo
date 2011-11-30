@@ -22,7 +22,7 @@
 
 package com.md87.charliebravo.commands;
 
-import com.md87.charliebravo.CharlieBravo;
+import com.dmdirc.util.DateUtils;
 import com.md87.charliebravo.Command;
 import com.md87.charliebravo.CommandOptions;
 import com.md87.charliebravo.ConfigCache;
@@ -67,7 +67,7 @@ public class SkillCommand implements Command {
                         response.sendMessage("you are currently training "
                                 + skill.getSkill().getName() + " to level "
                                 + skill.getTargetLevel() + ". It will finish in "
-                                + CharlieBravo.formatDuration((int) (skill.getEndTime()
+                                + DateUtils.formatDuration((int) (skill.getEndTime()
                                 .getTime() - System.currentTimeMillis()) / 1000));
                     } else {
                         response.sendMessage("You are not training anything", true);
@@ -102,10 +102,10 @@ public class SkillCommand implements Command {
         public void execute(InputHandler handler, Response response, String line) throws Exception {
             response.setInheritFollows(true);
             response.sendMessage("the result has been cached for " +
-                    CharlieBravo.formatDuration((int) (System.currentTimeMillis()
+                    DateUtils.formatDuration((int) (System.currentTimeMillis()
                     - apiresponse.getApiResult().getCachedSince().getTime()) / 1000)
                     + ", and will expire in " +
-                    CharlieBravo.formatDuration((int) (apiresponse.getApiResult()
+                    DateUtils.formatDuration((int) (apiresponse.getApiResult()
                     .getCachedUntil().getTime() - System.currentTimeMillis()) / 1000));
         }
 

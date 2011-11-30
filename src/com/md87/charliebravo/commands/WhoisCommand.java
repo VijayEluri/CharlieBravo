@@ -23,7 +23,7 @@
 package com.md87.charliebravo.commands;
 
 import com.dmdirc.parser.interfaces.ClientInfo;
-import com.md87.charliebravo.CharlieBravo;
+import com.dmdirc.util.DateUtils;
 import com.md87.charliebravo.Command;
 import com.md87.charliebravo.InputHandler;
 import com.md87.charliebravo.Response;
@@ -51,7 +51,7 @@ public class WhoisCommand implements Command {
                     }
 
                     response.sendMessage(line + " last authenticated with me "
-                            + CharlieBravo.formatDuration((int)
+                            + DateUtils.formatDuration((int)
                             (System.currentTimeMillis() -
                             Long.valueOf(handler.getConfig().getOption(line, "internal.lastseen")))
                             / 1000)
@@ -70,7 +70,7 @@ public class WhoisCommand implements Command {
                     final StringBuilder extra = new StringBuilder();
 
                     if (handler.getConfig().hasOption(openid, "admin.level")) {
-                        extra.append(", and " + (you ? "have" : "has") + " access level ");
+                        extra.append(", and ").append(you ? "have" : "has").append(" access level ");
                         extra.append(handler.getConfig().getOption(openid, "admin.level"));
                     }
 
